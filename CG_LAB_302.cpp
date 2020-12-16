@@ -5,6 +5,7 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
+#include <opencv2/photo.hpp>
 
 using namespace std;
 using namespace cv;
@@ -51,6 +52,32 @@ Mat chooseimg()
 
 int task_1()
 {
+    Mat image = chooseimg(), newImage;
+    double Mean = 0.0, StdDev = 10.0;
+    randn(newImage, Scalar::all(Mean), Scalar::all(StdDev));  // filling with random pixel nums
+
+    for (int Rows = 0; Rows < image.rows; Rows++)
+    {
+        for (int Cols = 0; Cols < image.cols; Cols++)
+        {
+            Vec3b Source_Pixel = image.at<Vec3b>(Rows, Cols);
+            Vec3s Noise_Pixel = newImage.at<Vec3s>(Rows, Cols);
+
+            for (int i = 0; i < 3; i++)
+            {
+                int Dest_Pixel = Source_Pixel.val[i] + Noise_Pixel.val[i];
+                Noise_Pixel.val[i] = Clamp(Dest_Pixel,0, 255);
+            }
+        }
+    }
+
+    namedWindow("original_image", WINDOW_AUTOSIZE);
+    imshow("original_image", image);
+
+    namedWindow("result_image", WINDOW_AUTOSIZE);
+    imshow("result_image", newImage);
+
+    waitKey(0);
     return 0;
     main();
 }
@@ -141,7 +168,7 @@ int task_2a_var2()
     kernel[8] = 1.f / 9.f;
 
     Mat kernel_matrix = Mat(3, 3, CV_32FC1, kernel);
-    blur(img, dst, Size(3,3), Point(-1, -1));
+    blur(img, dst, Size(3, 3), Point(-1, -1));
 
     imshow("original", img);
     imshow("cvFilter2D", dst);
@@ -264,14 +291,49 @@ int task_2b_var2(int radius, float sigma)
 
 }
 
-int task_3() 
+int task_3()
 {
+    cout << "Performing a noise removal using OpenCV fastNIMeansDenoisingColored() method: " << endl;
+
+    int a[4] = { 40, 40, 7, 21 };
+
+    Mat image = chooseimg(), newImage;
+    fastNlMeansDenoisingColored(image, newImage, a[0], a[1], a[2], a[3]);
+
+    namedWindow("original_image", WINDOW_AUTOSIZE);
+    imshow("original_image", image);
+
+    namedWindow("result_image", WINDOW_AUTOSIZE);
+    imshow("result_image", newImage);
+
+    waitKey(0);
+    return 0;
+    main();
+}
+
+int task_3_var2() 
+{
+    int MAX_KERNEL_LENGTH = 31;
+    Mat image = chooseimg(), newImage;
+
+    for (int i = 1; i < MAX_KERNEL_LENGTH; i = i + 2)
+    {
+        bilateralFilter(image, newImage, i, i * 2, i / 2);
+    }
+
+    namedWindow("original_image", WINDOW_AUTOSIZE);
+    imshow("original_image", image);
+
+    namedWindow("result_image", WINDOW_AUTOSIZE);
+    imshow("result_image", newImage);
+
+    waitKey(0);
     return 0;
     main();
 }
 
 int main()
-{ 
+{
     int opt;
 
     cout
@@ -283,6 +345,7 @@ int main()
         << endl << "Write 4 for task_2b" << endl
         << endl << "Write 5 for task_2b_var2" << endl
         << endl << "Write 6 for task_3" << endl
+        << endl << "Write 6 for task_3_var2" << endl
         << endl
         << endl << "Write 0 to exit" << endl
         << endl
@@ -294,34 +357,32 @@ int main()
     switch (opt)
     {
     case 1:
-    task_1();
-    break;
+        task_1();
+        break;
     case 2:
-    task_2a();
-    break;
+        task_2a();
+        break;
     case 3:
-    task_2a_var2();
-    break;
+        task_2a_var2();
+        break;
     case 4:
-    task_2b(2, 1);
-    break;
+        task_2b(2, 1);
+        break;
     case 5:
-    task_2b_var2(2, 1);
-    break;
+        task_2b_var2(2, 1);
+        break;
     case 6:
-    task_3();
-    break;
+        task_3();
+        break;
+    case 7:
+        task_3_var2();
+        break;
     case 0:
-    exit(1);
+        exit(1);
     default:
-    break;
+        break;
     }
 
 
     return 0;
 }
-
-
-
-
-
